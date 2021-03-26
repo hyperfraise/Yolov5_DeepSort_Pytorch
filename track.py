@@ -249,15 +249,14 @@ def detect(opt):
                     vid_writer.write(im0)
             batch_imgs, batch_meta_data = [], []
 
-        if new_img is None:
-            continue
-        img = torch.from_numpy(new_img).to(device)
-        img = img.half() if half else img.float()  # uint8 to fp16/32
-        img /= 255.0  # 0 - 255 to 0.0 - 1.0
-        batch_imgs.append(img)
-        batch_meta_data.append(
-            [new_frame_idx - last_frame_idx, new_path, new_im0s, new_vid_cap]
-        )
+        if not new_img is None:
+            img = torch.from_numpy(new_img).to(device)
+            img = img.half() if half else img.float()  # uint8 to fp16/32
+            img /= 255.0  # 0 - 255 to 0.0 - 1.0
+            batch_imgs.append(img)
+            batch_meta_data.append(
+                [new_frame_idx - last_frame_idx, new_path, new_im0s, new_vid_cap]
+            )
         if current_path != new_path:
             last_frame_idx = new_frame_idx
             deepsort.reset()
