@@ -95,14 +95,9 @@ def save_bounding_boxes_to_text(frame_idx, outputs, txt_path):
             )  # label format
 
 
-def convert_detections_to_updated_tracks(det, img, im0, names, deepsort, s):
+def convert_detections_to_updated_tracks(det, img, im0, names, deepsort):
     # Rescale boxes from img_size to im0 size
     det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-
-    # Print results
-    for c in det[:, -1].unique():
-        n = (det[:, -1] == c).sum()  # detections per class
-        s += "%g %ss, " % (n, names[int(c)])  # add to string
 
     bbox_xywh = []
     confs = []
@@ -118,7 +113,7 @@ def convert_detections_to_updated_tracks(det, img, im0, names, deepsort, s):
     confss = torch.Tensor(confs)
 
     # Pass detections to deepsort
-    return deepsort.update(xywhs, confss, im0), s
+    return deepsort.update(xywhs, confss, im0)
 
 
 def detect(opt, save_img=False):
@@ -215,13 +210,12 @@ def detect(opt, save_img=False):
 
                 # Process detections
                 for i, det in enumerate(pred):  # detections per image
-                    p, s, im0 = path, "", im0s
-                    s += "%gx%g " % img.shape[2:]  # print string
-                    save_path = str(Path(out) / Path(p).name)
+                    im0 = im0s
+                    save_path = str(Path(out) / Path(path).name)
 
                     if det is not None and len(det):
-                        outputs, s = convert_detections_to_updated_tracks(
-                            det, img, im0, names, deepsort, s
+                        outputs = convert_detections_to_updated_tracks(
+                            det, img, im0, names, deepsort
                         )
 
                         # draw boxes for visualization
@@ -236,9 +230,6 @@ def detect(opt, save_img=False):
 
                     else:
                         deepsort.increment_ages()
-
-                    # Print time (inference + NMS)
-                    print("%sDone. (%.3fs)" % (s, t2 - t1))
 
                     # Save results (image with detections)
                     if not save_img:
