@@ -150,7 +150,7 @@ def detect(opt):
 
     # Initialize
     device = torch.device("cuda:" + opt.device)
-    os.makedirs(out)  # make new output folder
+    os.makedirs(out, exist_ok=True)  # make new output folder
     videos_already_done = os.listdir(out)
     videos_already_done = [
         video_name.replace(".txt", "") for video_name in videos_already_done
