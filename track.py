@@ -253,6 +253,8 @@ def detect(opt):
                     vid_writer.write(im0)
             batch_imgs, batch_meta_data = [], []
 
+        if opt.num_ranks != 0 and len(new_path) % opt.num_ranks != opt.rank:
+            continue
         img = torch.from_numpy(new_img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -310,6 +312,16 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--agnostic-nms", action="store_true", help="class-agnostic NMS"
+    )
+    parser.add_argument(
+        "--rank",
+        "-r",
+        type=int,
+        default=0,
+        help="The rank of this process in videos dealing out",
+    )
+    parser.add_argument(
+        "--num-ranks", "-nr", type=int, default=0, help="The total number of processes"
     )
     parser.add_argument("--augment", action="store_true", help="augmented inference")
     parser.add_argument(
