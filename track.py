@@ -70,6 +70,57 @@ def draw_boxes(img, bbox, identities=None, offset=(0, 0)):
     return img
 
 
+def save_bounding_boxes_to_text(frame_idx, outputs, txt_path):
+    for j, output in enumerate(outputs):
+        bbox_left = output[0]
+        bbox_top = output[1]
+        bbox_w = output[2]
+        bbox_h = output[3]
+        identity = output[-1]
+        with open(txt_path, "a") as f:
+            f.write(
+                ("%g " * 10 + "\n")
+                % (
+                    frame_idx,
+                    identity,
+                    bbox_left,
+                    bbox_top,
+                    bbox_w,
+                    bbox_h,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                )
+            )  # label format
+
+
+def convert_detections_to_updated_tracks(det, img, im0, names, deepsort):
+    # Rescale boxes from img_size to im0 size
+    det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+
+    # Print results
+    for c in det[:, -1].unique():
+        n = (det[:, -1] == c).sum()  # detections per class
+        s += "%g %ss, " % (n, names[int(c)])  # add to string
+
+    bbox_xywh = []
+    confs = []
+
+    # Adapt detections to deep sort input format
+    for *xyxy, conf, cls in det:
+        x_c, y_c, bbox_w, bbox_h = bbox_rel(*xyxy)
+        obj = [x_c, y_c, bbox_w, bbox_h]
+        bbox_xywh.append(obj)
+        confs.append([conf.item()])
+
+    xywhs = torch.Tensor(bbox_xywh)
+    confss = torch.Tensor(confs)
+
+    # Pass detections to deepsort
+    return deepsort.update(xywhs, confss, im0)
+
+
 def detect(opt, save_img=False):
     out, source, weights, view_img, save_txt, imgsz = (
         opt.output,
@@ -147,6 +198,7 @@ def detect(opt, save_img=False):
             t1 = time_synchronized()
 
             for batch_index, pred in enumerate(model(batch_imgs, augment=opt.augment)):
+                img = batch_imgs[batch_index]
                 frame_idx, path, im0s, vid_cap = batch_meta_data[batch_index]
                 # Apply NMS
                 pred = non_max_suppression(
@@ -160,71 +212,24 @@ def detect(opt, save_img=False):
 
                 # Process detections
                 for i, det in enumerate(pred):  # detections per image
-                    if webcam:  # batch_size >= 1
-                        p, s, im0 = path[i], "%g: " % i, im0s[i].copy()
-                    else:
-                        p, s, im0 = path, "", im0s
-
+                    p, s, im0 = path, "", im0s
                     s += "%gx%g " % img.shape[2:]  # print string
                     save_path = str(Path(out) / Path(p).name)
 
                     if det is not None and len(det):
-                        # Rescale boxes from img_size to im0 size
-                        det[:, :4] = scale_coords(
-                            img.shape[2:], det[:, :4], im0.shape
-                        ).round()
-
-                        # Print results
-                        for c in det[:, -1].unique():
-                            n = (det[:, -1] == c).sum()  # detections per class
-                            s += "%g %ss, " % (n, names[int(c)])  # add to string
-
-                        bbox_xywh = []
-                        confs = []
-
-                        # Adapt detections to deep sort input format
-                        for *xyxy, conf, cls in det:
-                            x_c, y_c, bbox_w, bbox_h = bbox_rel(*xyxy)
-                            obj = [x_c, y_c, bbox_w, bbox_h]
-                            bbox_xywh.append(obj)
-                            confs.append([conf.item()])
-
-                        xywhs = torch.Tensor(bbox_xywh)
-                        confss = torch.Tensor(confs)
-
-                        # Pass detections to deepsort
-                        outputs = deepsort.update(xywhs, confss, im0)
+                        outputs = convert_detections_to_updated_tracks(
+                            det, img, im0, names, deepsort
+                        )
 
                         # draw boxes for visualization
-                        if len(outputs) > 0:
+                        if save_img and len(outputs) > 0:
                             bbox_xyxy = outputs[:, :4]
                             identities = outputs[:, -1]
                             draw_boxes(im0, bbox_xyxy, identities)
 
                         # Write MOT compliant results to file
                         if save_txt and len(outputs) != 0:
-                            for j, output in enumerate(outputs):
-                                bbox_left = output[0]
-                                bbox_top = output[1]
-                                bbox_w = output[2]
-                                bbox_h = output[3]
-                                identity = output[-1]
-                                with open(txt_path, "a") as f:
-                                    f.write(
-                                        ("%g " * 10 + "\n")
-                                        % (
-                                            frame_idx,
-                                            identity,
-                                            bbox_left,
-                                            bbox_top,
-                                            bbox_w,
-                                            bbox_h,
-                                            -1,
-                                            -1,
-                                            -1,
-                                            -1,
-                                        )
-                                    )  # label format
+                            save_bounding_boxes_to_text(frame_idx, outputs, txt_path)
 
                     else:
                         deepsort.increment_ages()
@@ -233,27 +238,30 @@ def detect(opt, save_img=False):
                     print("%sDone. (%.3fs)" % (s, t2 - t1))
 
                     # Save results (image with detections)
-                    if save_img:
-                        if vid_path != save_path:  # new video
-                            vid_path = save_path
-                            if isinstance(vid_writer, cv2.VideoWriter):
-                                vid_writer.release()  # release previous video writer
+                    if not save_img:
+                        continue
+                    if vid_path != save_path:  # new video
+                        vid_path = save_path
+                        if isinstance(vid_writer, cv2.VideoWriter):
+                            vid_writer.release()  # release previous video writer
 
-                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                            vid_writer = cv2.VideoWriter(
-                                save_path,
-                                cv2.VideoWriter_fourcc(*opt.fourcc),
-                                fps,
-                                (w, h),
-                            )
-                        vid_writer.write(im0)
+                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        vid_writer = cv2.VideoWriter(
+                            save_path,
+                            cv2.VideoWriter_fourcc(*opt.fourcc),
+                            fps,
+                            (w, h),
+                        )
+                    vid_writer.write(im0)
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         batch_imgs.append(img)
         batch_meta_data.append([frame_idx, new_path, im0s, vid_cap])
+        if current_path != new_path:
+            deepsort.reset()
         current_path = new_path
 
     if save_txt or save_img:
