@@ -249,8 +249,6 @@ def detect(opt):
                     vid_writer.write(im0)
             batch_imgs, batch_meta_data = [], []
 
-        if new_path in videos_already_done:
-            continue
         img = torch.from_numpy(new_img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
