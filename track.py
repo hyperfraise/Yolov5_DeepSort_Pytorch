@@ -259,6 +259,7 @@ def detect(opt, save_img=False):
                             (w, h),
                         )
                     vid_writer.write(im0)
+            batch_imgs, batch_meta_data = [], []
 
         img = torch.from_numpy(new_img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
