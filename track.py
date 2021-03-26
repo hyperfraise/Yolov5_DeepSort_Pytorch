@@ -154,7 +154,8 @@ def detect(opt):
     os.makedirs(out, exist_ok=True)  # make new output folder
     videos_already_done = os.listdir(out)
     videos_already_done = [
-        video_name.replace(".txt", "") for video_name in videos_already_done
+        video_name.replace(".txt", "").replace(".webm", "")
+        for video_name in videos_already_done
     ]
     half = device.type != "cpu"  # half precision only supported on CUDA
 
