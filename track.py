@@ -197,8 +197,8 @@ def detect(opt):
             ):
                 img = batch_imgs[batch_index].unsqueeze(0)
                 frame_idx, path, im0s, vid_cap = batch_meta_data[batch_index]
-                txt_path = str(Path(out)) + f"/results_{path.replace('.mp4', '')}.txt"
-                Path(txt_path).touch()
+                video_name = path.replace(".mp4", "").split("/")[-1]
+                txt_path = str(Path(out)) + f"/results_{video_name}.txt"
                 # Apply NMS
                 pred = non_max_suppression(
                     pred.unsqueeze(0),
