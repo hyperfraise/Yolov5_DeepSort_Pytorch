@@ -194,7 +194,7 @@ def detect(opt, save_img=False):
         if len(batch_imgs) == batch_size or (
             len(batch_imgs) > 0 and new_path != current_path
         ):  # new video
-            batch_imgs = torch.cat(batch_imgs)
+            batch_imgs = torch.stack(batch_imgs)
             # Inference
             t1 = time_synchronized()
 
