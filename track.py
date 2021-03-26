@@ -4,7 +4,7 @@ sys.path.insert(0, "./yolov5")
 
 from yolov5.utils.datasets import LoadImages, LoadStreams
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
-from yolov5.utils.torch_utils import select_device, time_synchronized
+from yolov5.utils.torch_utils import time_synchronized
 from deep_sort_pytorch.utils.parser import get_config
 from deep_sort_pytorch.deep_sort import DeepSort
 import argparse
@@ -149,7 +149,7 @@ def detect(opt):
     )
 
     # Initialize
-    device = select_device(opt.device)
+    device = torch.device("cuda:" + opt.device)
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
