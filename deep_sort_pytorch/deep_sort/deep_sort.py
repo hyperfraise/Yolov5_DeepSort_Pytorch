@@ -23,6 +23,7 @@ class DeepSort(object):
         n_init=3,
         nn_budget=100,
         use_cuda=True,
+        device=0,
     ):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
@@ -33,7 +34,7 @@ class DeepSort(object):
         self.n_init = n_init
         self.max_age = max_age
 
-        self.extractor = Extractor(model_path, use_cuda=use_cuda)
+        self.extractor = Extractor(model_path, use_cuda=use_cuda, device=device)
 
         self.metric = NearestNeighborDistanceMetric(
             "cosine", self.max_cosine_distance, self.nn_budget

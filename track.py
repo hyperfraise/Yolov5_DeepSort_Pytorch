@@ -88,10 +88,6 @@ def save_bounding_boxes_to_text(frame_idx, outputs, txt_path):
                     bbox_top,
                     bbox_w,
                     bbox_h,
-                    -1,
-                    -1,
-                    -1,
-                    -1,
                 )
             )  # label format
 
@@ -147,6 +143,7 @@ def detect(opt):
         n_init=cfg.DEEPSORT.N_INIT,
         nn_budget=cfg.DEEPSORT.NN_BUDGET,
         use_cuda=True,
+        device=opt.device,
     )
 
     # Initialize
