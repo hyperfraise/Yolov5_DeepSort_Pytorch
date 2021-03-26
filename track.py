@@ -165,13 +165,8 @@ def detect(opt):
 
     # Set Dataloader
     vid_path, vid_writer = None, None
-    if webcam:
-        view_img = True
-        cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz)
-    else:
-        view_img = True
-        dataset = LoadImages(source, img_size=imgsz)
+    view_img = True
+    dataset = LoadImages(source, img_size=imgsz, rank=opt.rank, num_ranks=opt.num_ranks)
 
     # Get names and colors
     names = model.module.names if hasattr(model, "module") else model.names
@@ -255,9 +250,7 @@ def detect(opt):
                     vid_writer.write(im0)
             batch_imgs, batch_meta_data = [], []
 
-        if (
-            opt.num_ranks != 0 and len(new_path) % opt.num_ranks != opt.rank
-        ) or new_path in videos_already_done:
+        if new_path in videos_already_done:
             continue
         img = torch.from_numpy(new_img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
