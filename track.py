@@ -17,6 +17,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 
+cudnn.benchmark = True  # set True to speed up constant image size inference
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
 
