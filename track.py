@@ -80,7 +80,7 @@ def save_bounding_boxes_to_text(frame_idx, outputs, txt_path):
         identity = output[-1]
         with open(txt_path, "a") as f:
             f.write(
-                ("%g " * 10 + "\n")
+                ("%g " * 6 + "\n")
                 % (
                     frame_idx,
                     identity,
