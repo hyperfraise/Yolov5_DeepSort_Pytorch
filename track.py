@@ -181,7 +181,6 @@ def detect(opt):
     _ = model(img.half() if half else img) if device.type != "cpu" else None
 
     save_path = str(Path(out))
-    txt_path = str(Path(out)) + "/results.txt"
     batch_imgs, batch_meta_data = [], []
     batch_size = 32
     current_path = ""
@@ -198,6 +197,7 @@ def detect(opt):
             ):
                 img = batch_imgs[batch_index].unsqueeze(0)
                 frame_idx, path, im0s, vid_cap = batch_meta_data[batch_index]
+                txt_path = str(Path(out)) + f"/results_{path}.txt"
                 # Apply NMS
                 pred = non_max_suppression(
                     pred.unsqueeze(0),
