@@ -183,6 +183,7 @@ def detect(opt):
     save_path = str(Path(out))
     batch_imgs, batch_meta_data = [], []
     batch_size = 32
+    last_frame_idx = 0
     current_path = ""
     for new_frame_idx, (new_path, new_img, new_im0s, new_vid_cap) in enumerate(dataset):
         if len(batch_imgs) == batch_size or (
@@ -256,8 +257,11 @@ def detect(opt):
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
         batch_imgs.append(img)
-        batch_meta_data.append([new_frame_idx, new_path, new_im0s, new_vid_cap])
+        batch_meta_data.append(
+            [new_frame_idx - last_frame_idx, new_path, new_im0s, new_vid_cap]
+        )
         if current_path != new_path:
+            last_frame_idx = new_frame_idx
             deepsort.reset()
         current_path = new_path
 
