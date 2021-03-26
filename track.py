@@ -152,11 +152,6 @@ def detect(opt):
     # Initialize
     device = torch.device("cuda:" + opt.device)
     os.makedirs(out, exist_ok=True)  # make new output folder
-    videos_already_done = os.listdir(out)
-    videos_already_done = [
-        video_name.replace(".txt", "").replace(".webm", "")
-        for video_name in videos_already_done
-    ]
     half = device.type != "cpu"  # half precision only supported on CUDA
 
     # Load model
@@ -168,7 +163,9 @@ def detect(opt):
     # Set Dataloader
     vid_path, vid_writer = None, None
     view_img = True
-    dataset = LoadImages(source, img_size=imgsz, rank=opt.rank, num_ranks=opt.num_ranks)
+    dataset = LoadImages(
+        source, img_size=imgsz, rank=opt.rank, num_ranks=opt.num_ranks, output_dir=out
+    )
 
     # Get names and colors
     names = model.module.names if hasattr(model, "module") else model.names
