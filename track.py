@@ -116,13 +116,14 @@ def convert_detections_to_updated_tracks(det, img, im0, names, deepsort):
     return deepsort.update(xywhs, confss, im0)
 
 
-def detect(opt, save_img=False):
-    out, source, weights, view_img, save_txt, imgsz = (
+def detect(opt):
+    out, source, weights, view_img, save_txt, save_img, imgsz = (
         opt.output,
         opt.source,
         opt.weights,
         opt.view_img,
         opt.save_txt,
+        opt.save_img,
         opt.img_size,
     )
     webcam = (
@@ -168,7 +169,6 @@ def detect(opt, save_img=False):
         dataset = LoadStreams(source, img_size=imgsz)
     else:
         view_img = True
-        save_img = True
         dataset = LoadImages(source, img_size=imgsz)
 
     # Get names and colors
@@ -298,6 +298,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--view-img", action="store_true", help="display results")
     parser.add_argument("--save-txt", action="store_true", help="save results to *.txt")
+    parser.add_argument("--save-img", action="store_true", help="save results to *.mp4")
     # class 0 is person
     parser.add_argument(
         "--classes", nargs="+", type=int, default=[0], help="filter by class"
