@@ -199,6 +199,7 @@ def detect(opt, save_img=False):
             t1 = time_synchronized()
 
             for batch_index, pred in enumerate(model(batch_imgs, augment=opt.augment)):
+                print(batch_index)
                 img = batch_imgs[batch_index].unsqueeze(0)
                 frame_idx, path, im0s, vid_cap = batch_meta_data[batch_index]
                 # Apply NMS
