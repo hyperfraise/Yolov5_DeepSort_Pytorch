@@ -198,13 +198,15 @@ def detect(opt, save_img=False):
             # Inference
             t1 = time_synchronized()
 
-            for batch_index, pred in enumerate(model(batch_imgs, augment=opt.augment)):
+            for batch_index, pred in enumerate(
+                model(batch_imgs, augment=opt.augment)[0]
+            ):
                 print(batch_index)
                 img = batch_imgs[batch_index].unsqueeze(0)
                 frame_idx, path, im0s, vid_cap = batch_meta_data[batch_index]
                 # Apply NMS
                 pred = non_max_suppression(
-                    pred,
+                    pred.unsqueeze(0),
                     opt.conf_thres,
                     opt.iou_thres,
                     classes=opt.classes,
