@@ -150,9 +150,11 @@ def detect(opt):
 
     # Initialize
     device = torch.device("cuda:" + opt.device)
-    if os.path.exists(out):
-        shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
+    videos_already_done = os.listdir(out)
+    videos_already_done = [
+        video_name.replace(".txt", "") for video_name in videos_already_done
+    ]
     half = device.type != "cpu"  # half precision only supported on CUDA
 
     # Load model
@@ -253,7 +255,9 @@ def detect(opt):
                     vid_writer.write(im0)
             batch_imgs, batch_meta_data = [], []
 
-        if opt.num_ranks != 0 and len(new_path) % opt.num_ranks != opt.rank:
+        if (
+            opt.num_ranks != 0 and len(new_path) % opt.num_ranks != opt.rank
+        ) or new_path in videos_already_done:
             continue
         img = torch.from_numpy(new_img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
