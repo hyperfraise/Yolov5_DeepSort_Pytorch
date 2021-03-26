@@ -214,7 +214,6 @@ def detect(opt, save_img=False):
                 # Process detections
                 for i, det in enumerate(pred):  # detections per image
                     p, s, im0 = path, "", im0s
-                    print(img.shape)
                     s += "%gx%g " % img.shape[2:]  # print string
                     save_path = str(Path(out) / Path(p).name)
 
