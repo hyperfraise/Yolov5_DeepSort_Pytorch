@@ -188,6 +188,7 @@ def detect(opt, save_img=False):
     save_path = str(Path(out))
     txt_path = str(Path(out)) + "/results.txt"
     batch_imgs, batch_meta_data = [], []
+    batch_size = 32
     current_path = ""
     for frame_idx, (new_path, img, im0s, vid_cap) in enumerate(dataset):
         if len(batch_imgs) == batch_size or (
