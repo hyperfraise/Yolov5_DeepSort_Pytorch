@@ -95,7 +95,7 @@ def save_bounding_boxes_to_text(frame_idx, outputs, txt_path):
             )  # label format
 
 
-def convert_detections_to_updated_tracks(det, img, im0, names, deepsort):
+def convert_detections_to_updated_tracks(det, img, im0, names, deepsort, s):
     # Rescale boxes from img_size to im0 size
     det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
@@ -118,7 +118,7 @@ def convert_detections_to_updated_tracks(det, img, im0, names, deepsort):
     confss = torch.Tensor(confs)
 
     # Pass detections to deepsort
-    return deepsort.update(xywhs, confss, im0)
+    return deepsort.update(xywhs, confss, im0), s
 
 
 def detect(opt, save_img=False):
@@ -219,7 +219,7 @@ def detect(opt, save_img=False):
                     save_path = str(Path(out) / Path(p).name)
 
                     if det is not None and len(det):
-                        outputs = convert_detections_to_updated_tracks(
+                        outputs, s = convert_detections_to_updated_tracks(
                             det, img, im0, names, deepsort
                         )
 
