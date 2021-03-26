@@ -42,7 +42,7 @@ class DeepSort(object):
             self.metric,
             max_iou_distance=self.max_iou_distance,
             max_age=self.max_age,
-            n_init=n_init,
+            n_init=self.n_init,
         )
 
     def reset(self):
@@ -50,7 +50,7 @@ class DeepSort(object):
             self.metric,
             max_iou_distance=self.max_iou_distance,
             max_age=self.max_age,
-            n_init=n_init,
+            n_init=self.n_init,
         )
 
     def update(self, bbox_xywh, confidences, ori_img):
