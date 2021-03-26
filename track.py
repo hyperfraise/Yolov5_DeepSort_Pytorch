@@ -219,7 +219,7 @@ def detect(opt, save_img=False):
 
                     if det is not None and len(det):
                         outputs, s = convert_detections_to_updated_tracks(
-                            det, img, im0, names, deepsort
+                            det, img, im0, names, deepsort, s
                         )
 
                         # draw boxes for visualization
