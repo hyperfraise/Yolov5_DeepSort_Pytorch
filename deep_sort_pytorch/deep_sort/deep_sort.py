@@ -26,18 +26,31 @@ class DeepSort(object):
     ):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap
+        max_cosine_distance = max_dist
+        self.max_cosine_distance = max_cosine_distance
+        self.nn_budget = nn_budget
+        self.max_iou_distance = max_iou_distance
+        self.n_init = n_init
+        self.max_age = max_age
 
         self.extractor = Extractor(model_path, use_cuda=use_cuda)
 
-        max_cosine_distance = max_dist
-        metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+        self.metric = NearestNeighborDistanceMetric(
+            "cosine", self.max_cosine_distance, self.nn_budget
+        )
         self.tracker = Tracker(
-            metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init
+            self.metric,
+            max_iou_distance=self.max_iou_distance,
+            max_age=self.max_age,
+            n_init=n_init,
         )
 
     def reset(self):
         self.tracker = Tracker(
-            metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init
+            self.metric,
+            max_iou_distance=self.max_iou_distance,
+            max_age=self.max_age,
+            n_init=n_init,
         )
 
     def update(self, bbox_xywh, confidences, ori_img):
