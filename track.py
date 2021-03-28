@@ -194,7 +194,7 @@ def detect(opt):
                 video_name = (
                     path.replace(".mp4", "").replace(".webm", "").split("/")[-1]
                 )
-                txt_path = str(Path(out)) + f"/results_{video_name}.txt"
+                txt_path = str(Path(out)) + f"/{video_name}.txt"
                 # Apply NMS
                 pred = non_max_suppression(
                     pred.unsqueeze(0),
